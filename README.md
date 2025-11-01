@@ -1,2 +1,2 @@
-# ok_arduino_little_layout
+# OK Little Layout for Arduino
 Simple text layout for small displays
