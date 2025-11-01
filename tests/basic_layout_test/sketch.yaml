@@ -1,0 +1,13 @@
+default_profile: default
+
+profiles:
+  default:
+    fqbn: esp32:esp32:esp32
+    platforms:
+      - platform: esp32:esp32 (3.3.2)
+        platform_index_url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+    libraries:
+      - dir: ../..
+      - Everyday Pixel Fonts (0.1)
+      - OK Arduino Logging (0.1)
+      - U8g2 (2.35.30)

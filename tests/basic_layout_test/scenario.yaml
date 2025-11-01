@@ -1,0 +1,7 @@
+name: basic layout test
+version: 1
+steps:
+  - wait-serial: 'LAYOUT READY'
+  - take-screenshot:
+      part-id: 'oled'
+      save-to: 'output.tmp/screenshot.png'

@@ -137,7 +137,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
     TextChunk chunk = {row.text, row.text};
     while (next_chunk(&chunk)) {
       if (chunk.end <= chunk.begin) continue;
-      uint8_t const* font = font_for_height(chunk.height, chunk.bold);
+      uint8_t const* font = choose_font(chunk.height, chunk.bold);
       if (font == nullptr) continue;
 
       u8g2_SetFont(u8g2, font);
@@ -225,6 +225,7 @@ OkLittleLayout* new_ok_little_layout(
   u8g2_t* u8g2,
   uint8_t const* (*choose_font)(int, bool)
 ) {
-  OK_FATAL_IF(driver == nullptr);
+  OK_FATAL_IF(u8g2 == nullptr);
+  OK_FATAL_IF(choose_font == nullptr);
   return new OkLittleLayoutDef(u8g2, choose_font);
 }
