@@ -35,13 +35,13 @@ for test_dir in test_dirs:
             image = Image.open(actual_path).convert("RGB")
             diff = ImageChops.difference(expected_image, image)
             mask = diff.convert("L").point(lambda x: 127 if x else 0)
+            diff_path = actual_path.parent / f"diff.{actual_path.name}"
+            red_image = Image.new("RGB", expected_image.size, (255, 0, 0))
+            image.paste(red_image, (0, 0), mask)
+            while max(image.size) < 600:
+                image = image.resize([d * 2 for d in image.size], 0)
+            image.save(diff_path)
             if mask.getbbox():
-                diff_path = actual_path.parent / f"diff.{actual_path.name}"
-                red_image = Image.new("RGB", expected_image.size, (255, 0, 0))
-                image.paste(red_image, (0, 0), mask)
-                while max(image.size) < 600:
-                    image = image.resize([d * 2 for d in image.size], 0)
-                image.save(diff_path)
                 ok_logging_setup.exit(f"Images differ: {diff_path}")
         else:
             ok_logging_setup.exit(f"Bad comparison file: {expected_path}")
