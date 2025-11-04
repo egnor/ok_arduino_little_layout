@@ -154,10 +154,10 @@ class OkLittleLayoutDef : public OkLittleLayout {
       int end_x = text_x;
       for (char const* c = chunk.begin; c < chunk.end; ++c) {
         int const char_w = (*c <= 6) ? *c : u8g2_GetGlyphWidth(u8g2, *c);
-        int const char_x = (*c <= 6) ? 0 : u8g2->glyph_x_offset;
+        int const char_xo = (*c <= 6) ? 0 : u8g2->glyph_x_offset;
         if (chunk.tabs > last_tabs) {
           int const tab_x = (chunk.tabs * u8g2->width) / (row.tabs + 1);
-          text_x = std::max(text_x, tab_x - char_x);
+          end_x = text_x = std::max(text_x, tab_x - char_xo);
           last_tabs = chunk.tabs;
         }
         end_x += char_w;
