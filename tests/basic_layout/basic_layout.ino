@@ -1,4 +1,3 @@
-#include <everyday_pixel_fonts.h>
 #include <ok_little_layout.h>
 #include <U8g2lib.h>
 #include <Wire.h>

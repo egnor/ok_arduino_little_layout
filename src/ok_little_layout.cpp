@@ -67,19 +67,27 @@ class OkLittleLayoutDef : public OkLittleLayout {
       while (next_chunk(&chunk)) {
         row.height = std::max(row.height, chunk.height);
         uint8_t const* font = choose_font(chunk.height, chunk.bold);
-        if (font != nullptr && chunk.end > chunk.begin) {
-          u8g2_SetFont(u8g2, font);
-          int const ascent = u8g2->font_ref_ascent;
-          row.baseline = std::max(row.baseline, ascent + 1);
+        if (chunk.end > chunk.begin) {
+          if (font != nullptr) {
+            u8g2_SetFont(u8g2, font);
+            int const ascent = u8g2->font_ref_ascent;
+            row.baseline = std::max(row.baseline, ascent + 1);
+          } else {
+            OK_ERROR(
+              "No %dpx%s font, not showing \"%.*s\"",
+              chunk.height, chunk.bold ? " bold" : "",
+              chunk.end - chunk.begin, chunk.begin
+            )
+          }
         }
       }
       row.tabs = chunk.tabs;
 
-      int bot_y = draw_one_line(rows[line]);
+      int bot_y = draw_line(rows[line]);
       if (row.height != old_height) {
         for (int i = line + 1; i < rows_size; ++i) {
           rows[i].top_y = bot_y;
-          bot_y = draw_one_line(rows[i]);
+          bot_y = draw_line(rows[i]);
         }
         if (bot_y < nonblank_y) {
           int const blank_h = nonblank_y - bot_y;
@@ -125,15 +133,15 @@ class OkLittleLayoutDef : public OkLittleLayout {
   int temp_size = 0;
   int nonblank_y = 0;
 
-  int draw_one_line(Row const& row) {
+  int draw_line(Row const& row) {
     if (row.height == 0) return row.top_y;
 
     u8g2_SetFontMode(u8g2, 1);  // For _tr fonts
     u8g2_SetFontPosBaseline(u8g2);
 
-    int text_x = -10;
+    int last_tabs = -1;  // Treat the left margin (tabs=0) as a tabstop
+    int text_x = 0;
     int const text_y = row.top_y + row.baseline;
-    int last_tabs = -1;
     TextChunk chunk = {row.text, row.text};
     while (next_chunk(&chunk)) {
       if (chunk.end <= chunk.begin) continue;
@@ -141,27 +149,25 @@ class OkLittleLayoutDef : public OkLittleLayout {
       if (font == nullptr) continue;
 
       u8g2_SetFont(u8g2, font);
-      int const first_w = u8g2_GetGlyphWidth(u8g2, *chunk.begin);
-      int const first_offset = u8g2->glyph_x_offset;
 
       int const prev_x = text_x;
-      if (chunk.tabs > last_tabs) {
-        int const tab_x = (chunk.tabs * u8g2->width) / (row.tabs + 1);
-        text_x = std::max(text_x, tab_x - first_offset);
-        last_tabs = chunk.tabs;
-      }
-
-      int end_x = text_x + first_w;
-      for (char const* c = chunk.begin + 1; c < chunk.end; ++c) {
-        end_x += (*c <= 5) ? *c : u8g2_GetGlyphWidth(u8g2, *c);
+      int end_x = text_x;
+      for (char const* c = chunk.begin; c < chunk.end; ++c) {
+        int const char_w = (*c <= 6) ? *c : u8g2_GetGlyphWidth(u8g2, *c);
+        int const char_x = (*c <= 6) ? 0 : u8g2->glyph_x_offset;
+        if (chunk.tabs > last_tabs) {
+          int const tab_x = (chunk.tabs * u8g2->width) / (row.tabs + 1);
+          text_x = std::max(text_x, tab_x - char_x);
+          last_tabs = chunk.tabs;
+        }
+        end_x += char_w;
       }
 
       u8g2_SetDrawColor(u8g2, chunk.inverse ? 1 : 0);
       u8g2_DrawBox(u8g2, prev_x, row.top_y, end_x - prev_x, row.height);
-
       u8g2_SetDrawColor(u8g2, chunk.inverse ? 0 : 1);
       for (char const* c = chunk.begin; c < chunk.end; ++c) {
-        text_x += (*c <= 5) ? *c : u8g2_DrawGlyph(u8g2, text_x, text_y, *c);
+        text_x += (*c <= 6) ? *c : u8g2_DrawGlyph(u8g2, text_x, text_y, *c);
       }
     }
 
@@ -176,13 +182,13 @@ class OkLittleLayoutDef : public OkLittleLayout {
   }
 
   static bool next_chunk(TextChunk* ch) {
-    ch->begin = ch->end;
+    auto const orig_begin = ch->begin = ch->end;
     for (;;) {
       for (ch->end = ch->begin; *ch->end != '\0'; ++ch->end) {
-        if (*ch->end < 0x20 && *ch->end > 5) break;
+        if (*ch->end < 0x20 && *ch->end > 6) break;
       }
       if (ch->end > ch->begin) return true;
-      if (*ch->end == '\0') return false;
+      if (*ch->begin == '\0') return (ch->begin > orig_begin);
 
       switch (*ch->begin++) {
         case '\b':
@@ -194,6 +200,12 @@ class OkLittleLayoutDef : public OkLittleLayout {
             if (ch->height <= 2 && *ch->begin >= '0' && *ch->begin <= '9') {
               ch->height = ch->height * 10 + (*ch->begin++ - '0');
             }
+          } else if (*ch->begin == 'b') {
+            ++ch->begin;
+            ch->bold = !ch->bold;
+          } else if (*ch->begin == 'v') {
+            ++ch->begin;
+            ch->inverse = !ch->inverse;
           }
           break;
         case '\t':
