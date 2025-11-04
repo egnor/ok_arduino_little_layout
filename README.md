@@ -18,7 +18,7 @@ OK Little Layout is designed for pervasive small status displays, not to be a fu
 
 First [install U8g2](https://github.com/olikraus/u8g2/wiki/u8g2install) and [initialize a U8g2 driver for your hardware](https://github.com/olikraus/u8g2/wiki/u8g2setupcpp#introduction).
 
-Then, install this library ("OK Little Layout" in the library manager), and include its header file:
+Then, install this library ("OK Little Layout" in the library manager), and include its header:
 ```
 #include <ok_little_layout.h>
 ```
