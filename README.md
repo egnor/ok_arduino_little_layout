@@ -4,37 +4,74 @@
 <img width="410" alt="Microcontroller connected to display showing a tabular layout" src="https://github.com/user-attachments/assets/159f64de-037c-4e3f-bee7-94674864c930" />
 </p>
 
-The Little Layout library for Arduino lays out lines of text for small monochrome displays using [the u8g2 display driver library](https://github.com/olikraus/u8g2/wiki), with incremental update. Simple markup controls font size, boldness, inverse video, and column layout.
+OK Little Layout is an Arduino library to format text on small monochrome displays using [the u8g2 display driver library](https://github.com/olikraus/u8g2/wiki). Simple markup controls font size, boldness, inverse video, and column layout; changes render incrementally.
 
-You should first consider these more established options:
-- [LVGL](https://lvgl.io/) - full-color, high-end interactive GUI for fast 32-bit microcontrollers
+Before using this library, first consider more established options:
+- [LVGL](https://lvgl.io/) - full-color, high-end interactive GUI for 32-bit microcontrollers with framebuffers
 - [GUIslice](https://github.com/ImpulseAdventure/GUIslice) - like LVGL, not as pretty but runs on lower spec hardware
-- [UiUiUi](https://github.com/dirkhillbrecht/UiUiUi) - similar to Little Layout, also based on u8g2, more widget-box oriented and less text oriented; dormant?
+- [UiUiUi](https://github.com/dirkhillbrecht/UiUiUi) - similar to OK Little Layout, also based on u8g2, more widget-box oriented and less text oriented; dormant?
 - also: [µGUI](https://github.com/achimdoebler/UGUI), [micro-gui](https://github.com/ryankurte/micro-gui), [micrOS](https://github.com/GeoSn0w/micrOS), [RTT-GUI](https://github.com/onelife/RTT-GUI), [Tgui](https://github.com/NordicAlliance/arduino-tgui), [MicroGUI-Embedded](https://github.com/microgui/MicroGUI-Embedded?tab=readme-ov-file)
 
-Little Layout is intended to be very simple and work well on very small displays to support the "Everything Has A Little Status Display" philosophy, not to be a full interactive user interface (but you could build a menu system using it). It uses [the "Everyday Pixel" fonts](https://github.com/egnor/everyday_pixel_fonts/) by default, but can be configured with any u8g2-compatible fonts.
+OK Little Layout is designed for pervasive small status displays, not to be a full interactive user interface (but you could build a menu system using it). It uses [the "Everyday Pixel" fonts](https://github.com/egnor/everyday_pixel_fonts/) by default, but can use any u8g2-compatible fonts.
 
 ## Usage
 
-First, initialize a U8g2 driver for your hardware; [see the U8g2 setup documentation](https://github.com/olikraus/u8g2/wiki/u8g2setupcpp).
+First [install U8g2](https://github.com/olikraus/u8g2/wiki/u8g2install) and [initialize a U8g2 driver for your hardware](https://github.com/olikraus/u8g2/wiki/u8g2setupcpp#introduction).
+
+Then, install this library ("OK Little Layout" in the library manager), and include its header file:
+```
+#include <ok_little_layout.h>
+```
 
 Then, create an `OkLittleLayout` object, passing your U8g2 driver:
 ```
-OkLittleLayout* my_little_layout = new_ok_little_layout(my_u8g2.getU8g2());
+OkLittleLayout* my_little_layout = new_ok_little_layout(my_display.getU8g2());
 ```
 
-Finally write text (printf-style) to numbered display lines of your choice:
+Finally, write text (printf-style) to numbered display lines of your choice:
 ```
 my_little_layout->line_printf(0, "Hello World! The time is: %.3f", millis() * 1e-3f);
 ```
 
-Little Layout updates the display so it always shows all text lines in order. Line positioning depends on font height (see below). Enough lines are available to fill the screen even at the smallest font size; writing past that point has no effect.
+OK Little Layout updates the display so it always shows all text lines in order, to the limits of the screen. Line positioning depends on each line's maximum font height (see below). Each line will run off the right edge without wrapping, and line numbers run off the bottom without scrolling.
 
-## Markup
+### Markup
+
+Font size, text style, and spacing are set by control characters in the `->line_printf(...)` text:
+- `\f<size>` - set font size so lines take `<size>` pixels, from `\f5` ~ `\f15` (`\f1` ~ `\f20` for blank lines)
+- `\1` ~ `\6` - add precise horizontal spacing in pixels
+- `\t` - advance one tabstop; each line is evenly divided by tabs in that line (see examples below)
+- `\b` - toggle boldface on and off
+- `\v` - toggle inverse video on and off
+
+These are C string escapes that generate control characters. The control characters are the markup.
+
+### Configuring fonts
+
+By default, OK Little Layout uses [the "Everyday Pixel" fonts](https://github.com/egnor/everyday_pixel_fonts/). If you want to use different fonts, or just avoid linking in sizes you don't use, write a font-choosing function:
+```
+uint8_t const* my_font_chooser(int size, bool bold) {
+  if (size < 5) return nullptr;
+  switch (size) {  // basic example...
+    case 5: return u8g2_font_3x3basic_tr;
+    case 6: return u8g2_font_u8glib_4_tr;
+    case 7: return bd ? u8g2_font_wedge_tr : u8g2_font_tiny5_tr;
+    case 8: return bd ? u8g2_font_squeezed_b6_tr : u8g2_font_squeezed_r6_tr;
+    default: return bd ? u8g2_font_NokiaSmallBold_tr : u8g2_font_NokiaSmallPlain_tr;
+  }
+}
+```
+
+Then, pass your function as the optional second parameter to `new_ok_little_layout`:
+```
+my_little_layout = new_ok_little_layout(my_u8g2.getU8g2(), my_font_chooser);
+```
+
+See [`default_ok_little_layout_font.cpp`](src/default_ok_little_layout_font.cpp) for the default font selection.
 
 ## Examples
 
-These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326). _[Try this code on wokwi!](https://wokwi.com/projects/446633047263763457)_
+These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
 
 <table><tr><td>
 
@@ -67,14 +104,17 @@ These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326). _[Tr
 
 </td>
 <td>
+  <p align="center"><i><a href="https://wokwi.com/projects/446633047263763457">Try this code on wokwi!</a></i></p>
   <img width="565" lt="Screen with layout demonstration" src="https://github.com/user-attachments/assets/e575ede4-64f3-4289-b426-1738af726687" />
   <p align="center">(nice)</p>
 </td></tr>
 <tr></tr>
 <tr><td>
 
+&nbsp;(showing only layout calls for brevity...)
+
   ```
-  // Font sizes (only showing the layout->line_printf calls)
+  // Font sizes
   layout->line_printf(0, "\f55px text");
   layout->line_printf(1, "\f77px text");
   layout->line_printf(2, "\f99px text");
