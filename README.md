@@ -9,7 +9,7 @@ OK Little Layout is an Arduino library to format text on small monochrome displa
 Before using this library, first consider more established options:
 - [LVGL](https://lvgl.io/) - full-color, high-end interactive GUI for 32-bit microcontrollers with framebuffers
 - [GUIslice](https://github.com/ImpulseAdventure/GUIslice) - like LVGL, not as pretty but runs on lower spec hardware
-- [UiUiUi](https://github.com/dirkhillbrecht/UiUiUi) - similar to this library, also u8g2-based, more widget-box oriented and less text oriented; dormant?
+- [UiUiUi](https://github.com/dirkhillbrecht/UiUiUi) - similar to this library, also u8g2-based, more widget-boxy and less text-printy; dormant?
 - also: [µGUI](https://github.com/achimdoebler/UGUI), [micro-gui](https://github.com/ryankurte/micro-gui), [micrOS](https://github.com/GeoSn0w/micrOS), [RTT-GUI](https://github.com/onelife/RTT-GUI), [Tgui](https://github.com/NordicAlliance/arduino-tgui), [MicroGUI-Embedded](https://github.com/microgui/MicroGUI-Embedded?tab=readme-ov-file)
 
 OK Little Layout is designed for pervasive small status displays, not to be a full interactive user interface (but you could build a menu system using it). It uses [the "Everyday Pixel" fonts](https://github.com/egnor/everyday_pixel_fonts/) by default, but can use any u8g2-compatible fonts.
