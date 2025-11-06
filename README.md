@@ -73,11 +73,14 @@ See [`default_ok_little_layout_font.cpp`](src/default_ok_little_layout_font.cpp)
 
 These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
 
-<table><tr><td>
-
+<table>
+<tr><td>
+  <p align="center">
+    <b>Hello World</b><br/>
+    <i><a href="https://wokwi.com/projects/446633047263763457">(try this example on wokwi)</a></i>
+  </p>
+  
   ```
-  // "Hello World" for OK Little Layout
-
   #include <ok_little_layout.h>
   #include <U8g2lib.h>
   #include <Wire.h>
@@ -102,19 +105,18 @@ These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
   }
   ```
 
-</td>
-<td>
-  <p align="center"><i><a href="https://wokwi.com/projects/446633047263763457">Try this code on wokwi!</a></i></p>
+</td><td>
   <img width="565" lt="Screen with layout demonstration" src="https://github.com/user-attachments/assets/e575ede4-64f3-4289-b426-1738af726687" />
   <p align="center">(nice)</p>
 </td></tr>
 <tr></tr>
 <tr><td>
-
-&nbsp;(showing only layout calls for brevity...)
+  <p align="center">
+    <b>Font sizes</b><br/>
+    <i>(program structure omitted for brevity...)</i>
+  </p>
 
   ```
-  // Font sizes
   layout->line_printf(0, "\f55px text");
   layout->line_printf(1, "\f77px text");
   layout->line_printf(2, "\f99px text");
@@ -128,9 +130,9 @@ These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
 </td></tr>
 <tr></tr>
 <tr><td>
+  <p align="center"><b>Font styles</b></p>
 
   ```
-  // Text styles
   layout->line_printf(0, "\f9\bBold\b text");
   layout->line_printf(1, "\f9\vInverse Video\v text");
   ```
@@ -140,9 +142,9 @@ These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
 </td></tr>
 <tr></tr>
 <tr><td>
+  <p align="center"><b>Column layout using tabs</b></p>
 
   ```
-  // Column layout with tabs
   layout->line_printf(0, "First \tSecond");
   layout->line_printf(1, "Column \tColumn");
   layout->line_printf(2, "\f4");
@@ -159,9 +161,9 @@ These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
 </td></tr>
 <tr></tr>
 <tr><td>
+  <p align="center"><b>General formatting demo</b></p>
 
   ```
-  // Demo from the header
   layout->line_printf(0, "\f13\bBig Bold Text!");
   layout->line_printf(1, "\f7Small text / \bin bold\b / \f5tiny text");
   layout->line_printf(2, "\f4");
