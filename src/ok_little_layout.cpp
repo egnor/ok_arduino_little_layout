@@ -246,14 +246,14 @@ class OkLittleLayoutDef : public OkLittleLayout {
       tx_0 = x / 8; ty_0 = y / 8;
       tx_1 = (x + w - 1) / 8; ty_1 = (y + h - 1) / 8;
     } else if (u8g2->cb == U8G2_R1) {
-      tx_0 = ty_lim - (y + h - 1) / 8; ty_0 = x / 8;
-      tx_1 = ty_lim - y / 8; ty_1 = (x + w - 1) / 8;
+      tx_0 = tx_lim - (y + h - 1) / 8; ty_0 = x / 8;
+      tx_1 = tx_lim - y / 8; ty_1 = (x + w - 1) / 8;
     } else if (u8g2->cb == U8G2_R2) {
       tx_0 = tx_lim - (x + w - 1) / 8; ty_0 = ty_lim - (y + h - 1) / 8;
       tx_1 = tx_lim - x / 8; ty_1 = ty_lim - y / 8;
     } else if (u8g2->cb == U8G2_R3) {
-      tx_0 = y / 8; ty_0 = tx_lim - (x + w - 1) / 8;
-      tx_1 = (y + h - 1) / 8; ty_1 = tx_lim - x / 8;
+      tx_0 = y / 8; ty_0 = ty_lim - (x + w - 1) / 8;
+      tx_1 = (y + h - 1) / 8; ty_1 = ty_lim - x / 8;
     } else if (u8g2->cb == U8G2_MIRROR) {
       tx_0 = tx_lim - (x + w - 1) / 8; ty_0 = y / 8;
       tx_1 = tx_lim - x / 8; ty_1 = (y + h - 1) / 8;

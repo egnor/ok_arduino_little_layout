@@ -1,5 +1,5 @@
-def test_basic_layout(sim_output_dir, diff_image):
+def test_basic_layout(wokwi_output_dir, diff_image):
     diff_image(
-        sim_output_dir / "screenshot.png",
-        sim_output_dir.parent / "expected.screenshot.png"
+        wokwi_output_dir / "screenshot.png",
+        wokwi_output_dir.parent / "expected.screenshot.png"
     )

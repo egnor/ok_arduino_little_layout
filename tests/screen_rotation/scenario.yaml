@@ -1,0 +1,27 @@
+name: screen rotation test
+version: 1
+steps:
+  - wait-serial: 'R0 LAYOUT READY'
+  - take-screenshot:
+      part-id: 'oled'
+      save-to: 'output.tmp/screenshot-r0.png'
+  - wait-serial: 'R1 LAYOUT READY'
+  - take-screenshot:
+      part-id: 'oled'
+      save-to: 'output.tmp/screenshot-r1.png'
+  - wait-serial: 'R2 LAYOUT READY'
+  - take-screenshot:
+      part-id: 'oled'
+      save-to: 'output.tmp/screenshot-r2.png'
+  - wait-serial: 'R3 LAYOUT READY'
+  - take-screenshot:
+      part-id: 'oled'
+      save-to: 'output.tmp/screenshot-r3.png'
+  - wait-serial: 'MIRROR LAYOUT READY'
+  - take-screenshot:
+      part-id: 'oled'
+      save-to: 'output.tmp/screenshot-mirror.png'
+  - wait-serial: 'MIRROR VERTICAL LAYOUT READY'
+  - take-screenshot:
+      part-id: 'oled'
+      save-to: 'output.tmp/screenshot-mirror-vertical.png'

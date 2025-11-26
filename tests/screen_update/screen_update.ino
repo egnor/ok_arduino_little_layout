@@ -17,14 +17,18 @@ void setup() {
   display.setPowerSave(0);
 
   auto* const layout = new_ok_little_layout(display.getU8g2());
-  layout->line_printf(0, "\f5Hello, \bWorld 5!");
-  layout->line_printf(1, "\f7Hello, \bWorld 7!");
-  layout->line_printf(2, "\f9Hello, \bWorld 9!");
-  layout->line_printf(3, "\f11Hello, \bWorld 11!");
-  layout->line_printf(4, "\f13Hello, \bWorld 13!");
-  layout->line_printf(5, "Tab 1\tTab 2\tTab 3");
-  layout->line_printf(6, "\vReverse Video");
-  Serial.println("LAYOUT READY");
+  layout->line_printf(0, "\f9Line 0");
+  layout->line_printf(1, "\f9Line 1");
+  layout->line_printf(2, "\f9Line 2");
+  layout->line_printf(3, "\f9Line 3");
+  layout->line_printf(4, "\f9Line 4");
+  Serial.println("LAYOUT 1 READY");
+
+  layout->line_printf(3, "\f13\bUpdated line 3");
+  Serial.println("LAYOUT 2 READY");
+
+  layout->line_printf(1, "\f13\bUpdated line 1");
+  Serial.println("LAYOUT 3 READY");
   delete layout;
 }
 
