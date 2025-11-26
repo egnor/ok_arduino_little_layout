@@ -20,7 +20,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
     nonblank_y = u8g2->height;  // Erase any existing content
     rows_size = u8g2->height / 6 + 1;
     rows = new Row[rows_size];
-    for (int i = 0; i < rows_size; ++i) rows[i].top_y = -1;
+    // for (int i = 0; i < rows_size; ++i) rows[i].top_y = -1;
   }
 
   virtual ~OkLittleLayoutDef() {
@@ -32,8 +32,14 @@ class OkLittleLayoutDef : public OkLittleLayout {
   }
 
   virtual void line_printf(int line, char const* format, ...) override {
-    if (line < 0 || line >= rows_size) return;
-    auto& row = rows[line];
+    if (line < 0) {
+      OK_ERROR("Bad line number L%d", line);
+      return;
+    }
+    if (line >= rows_size) {
+      OK_DETAIL("Offscreen L%d", line);
+      return;
+    }
 
     while (true) {
       va_list args;
@@ -46,60 +52,70 @@ class OkLittleLayoutDef : public OkLittleLayout {
         temp_size = len + 1;
         temp = new char[temp_size];
       } else if (len < 0) {
-        OK_ERROR("Bad LittleLayout format (line %d): %s", line, format);
+        OK_ERROR("Bad L%d format: %s", line, format);
         return;
       } else {
         break;
       }
     }
 
-    if (row.text == nullptr || strcmp(temp, row.text) != 0) {
-      int const old_height = row.height;
-      row.height = 0;
-      row.baseline = 0;
-
-      delete[] row.text;
-      row.text = temp;
-      temp = nullptr;
-      temp_size = 0;
-
-      TextChunk chunk = {row.text, row.text};
-      while (next_chunk(&chunk)) {
-        row.height = std::max(row.height, chunk.height);
-        uint8_t const* font = choose_font(chunk.height, chunk.bold);
-        if (chunk.end > chunk.begin) {
-          if (font != nullptr) {
-            u8g2_SetFont(u8g2, font);
-            int const ascent = u8g2->font_ref_ascent;
-            row.baseline = std::max(row.baseline, ascent + 1);
-          } else {
-            OK_ERROR(
-              "No %dpx%s font, not showing \"%.*s\"",
-              chunk.height, chunk.bold ? " bold" : "",
-              chunk.end - chunk.begin, chunk.begin
-            )
-          }
-        }
-      }
-      row.tabs = chunk.tabs;
-
-      int bot_y = draw_line(rows[line]);
-      if (row.height != old_height) {
-        for (int i = line + 1; i < rows_size; ++i) {
-          rows[i].top_y = bot_y;
-          bot_y = draw_line(rows[i]);
-        }
-        if (bot_y < nonblank_y) {
-          int const blank_h = nonblank_y - bot_y;
-          u8g2_SetDrawColor(u8g2, 0);
-          u8g2_DrawBox(u8g2, 0, bot_y, u8g2->width, blank_h);
-          nonblank_y = bot_y;
-          bot_y += blank_h;
-        }
-      }
-
-      push_rect(0, row.top_y, u8g2->width, bot_y - row.top_y);
+    auto& row = rows[line];
+    if (row.text != nullptr && strcmp(temp, row.text) == 0) {
+      OK_DETAIL("Unchanged L%d: \"%s\"", line, temp);
+      return;
     }
+
+    int const old_height = row.height;
+    row.height = 0;
+    row.baseline = 0;
+
+    delete[] row.text;
+    row.text = temp;
+    temp = nullptr;
+    temp_size = 0;
+
+    TextChunk chunk = {row.text, row.text};
+    while (next_chunk(&chunk)) {
+      row.height = std::max(row.height, chunk.height);
+      uint8_t const* font = choose_font(chunk.height, chunk.bold);
+      if (chunk.end > chunk.begin) {
+        if (font != nullptr) {
+          u8g2_SetFont(u8g2, font);
+          int const ascent = u8g2->font_ref_ascent;
+          row.baseline = std::max(row.baseline, ascent + 1);
+        } else {
+          OK_ERROR(
+            "No %dpx%s font, skipping L%d chunk: \"%.*s\"",
+            chunk.height, chunk.bold ? " bold" : "", line,
+            chunk.end - chunk.begin, chunk.begin
+          )
+        }
+      }
+    }
+    row.tabs = chunk.tabs;
+    OK_DETAIL(
+      "L%d y=%d h=%d bl=%d ts=%d: \"%s\"",
+      line, row.top_y, row.height, row.baseline, row.tabs, row.text
+    );
+
+    int next_y = draw_line(rows[line]);
+    for (int i = line + 1; i < rows_size && next_y != rows[i].top_y; ++i) {
+      if (rows[i].height > 0) {
+        OK_DETAIL("Moving L%d y=%d -> %d", i, rows[i].top_y, next_y);
+      }
+      rows[i].top_y = next_y;
+      next_y = draw_line(rows[i]);
+
+      if (i == rows_size - 1 && next_y < nonblank_y) {
+        int const blank_h = nonblank_y - next_y;
+        u8g2_SetDrawColor(u8g2, 0);
+        u8g2_DrawBox(u8g2, 0, next_y, u8g2->width, blank_h);
+        nonblank_y = next_y;
+        next_y += blank_h;
+      }
+    }
+
+    push_rect(0, row.top_y, u8g2->width, next_y - row.top_y);
   }
 
   virtual u8g2_t* get_u8g2() const override { return this->u8g2; }
@@ -108,7 +124,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
   static constexpr int MAX_HEIGHT = 15;
 
   struct Row {
-    int top_y = 0;
+    int top_y = -1;  // Compensate for inter-line spacing
     int height = 0;
     int baseline = 0;
     int tabs = 0;
@@ -222,12 +238,49 @@ class OkLittleLayoutDef : public OkLittleLayout {
   }
 
   void push_rect(int x, int y, int w, int h) {
-    // TODO: account for rotation if any
-    int const tx = std::min<int>(x, u8g2->width) / 8;
-    int const ty = std::min<int>(y, u8g2->height) / 8;
-    int const tw = std::min<int>(x + w + 7, u8g2->width) / 8 - tx;
-    int const th = std::min<int>(y + h + 7, u8g2->height) / 8 - ty;
-    u8g2_UpdateDisplayArea(u8g2, tx, ty, tw, th);
+    if (w <= 0 || h <= 0) return;
+    int const tx_lim = u8g2_GetBufferTileWidth(u8g2) - 1;
+    int const ty_lim = u8g2_GetBufferTileHeight(u8g2) - 1;
+    int tx_0, tx_1, ty_0, ty_1;
+    if (u8g2->cb == U8G2_R0) {
+      tx_0 = x / 8; ty_0 = y / 8;
+      tx_1 = (x + w - 1) / 8; ty_1 = (y + h - 1) / 8;
+    } else if (u8g2->cb == U8G2_R1) {
+      tx_0 = ty_lim - (y + h - 1) / 8; ty_0 = x / 8;
+      tx_1 = ty_lim - y / 8; ty_1 = (x + w - 1) / 8;
+    } else if (u8g2->cb == U8G2_R2) {
+      tx_0 = tx_lim - (x + w - 1) / 8; ty_0 = ty_lim - (y + h - 1) / 8;
+      tx_1 = tx_lim - x / 8; ty_1 = ty_lim - y / 8;
+    } else if (u8g2->cb == U8G2_R3) {
+      tx_0 = y / 8; ty_0 = tx_lim - (x + w - 1) / 8;
+      tx_1 = (y + h - 1) / 8; ty_1 = tx_lim - x / 8;
+    } else if (u8g2->cb == U8G2_MIRROR) {
+      tx_0 = tx_lim - (x + w - 1) / 8; ty_0 = y / 8;
+      tx_1 = tx_lim - x / 8; ty_1 = (y + h - 1) / 8;
+    } else if (u8g2->cb == U8G2_MIRROR_VERTICAL) {
+      tx_0 = x / 8; ty_0 = ty_lim - (y + h - 1) / 8;
+      tx_1 = (x + w - 1) / 8; ty_1 = ty_lim - y / 8;
+    } else {
+      tx_0 = 0; ty_0 = 0; tx_1 = tx_lim; ty_1 = ty_lim;
+    }
+
+    if (tx_0 > tx_lim || ty_0 > ty_lim || tx_1 < 0 || ty_1 < 0) {
+      OK_DETAIL(
+        "No update: (%d,%d)+(%d,%d) => offscreen T(%d,%d)+(%d,%d)",
+        x, y, w, h, tx_0, ty_0, tx_1 - tx_0 + 1, ty_1 - ty_0 + 1
+      );
+      return;
+    }
+
+    int const tx_clip = std::max(0, std::min(tx_lim, tx_0));
+    int const ty_clip = std::max(0, std::min(ty_lim, ty_0));
+    int const tw_clip = std::max(0, std::min(tx_lim, tx_1)) - tx_clip + 1;
+    int const th_clip = std::max(0, std::min(ty_lim, ty_1)) - ty_clip + 1;
+    OK_DETAIL(
+      "Updating: (%d,%d)+(%d,%d) => clipped T(%d,%d)+(%d,%d)",
+      x, y, w, h, tx_clip, ty_clip, tw_clip, th_clip
+    );
+    u8g2_UpdateDisplayArea(u8g2, tx_clip, ty_clip, tw_clip, th_clip);
   }
 };
 
