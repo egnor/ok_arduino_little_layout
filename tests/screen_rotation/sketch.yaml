@@ -9,5 +9,5 @@ profiles:
     libraries:
       - dir: ../..
       - Everyday Pixel Fonts (0.1)
-      - OK Arduino Logging (0.1)
+      - OK Logging (0.3)
       - U8g2 (2.35.30)

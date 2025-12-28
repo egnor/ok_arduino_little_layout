@@ -52,7 +52,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
         temp_size = len + 1;
         temp = new char[temp_size];
       } else if (len < 0) {
-        OK_ERROR("Bad L%d format: %s", line, format);
+        OK_ERROR("Bad L%d format: \"%s\"", line, backslash(format));
         return;
       } else {
         break;
@@ -61,7 +61,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
 
     auto& row = rows[line];
     if (row.text != nullptr && strcmp(temp, row.text) == 0) {
-      OK_DETAIL("Unchanged L%d: \"%s\"", line, temp);
+      OK_DETAIL("Unchanged L%d: \"%s\"", line, backslash(temp));
       return;
     }
 
@@ -95,7 +95,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
     row.tabs = chunk.tabs;
     OK_DETAIL(
       "L%d y=%d h=%d bl=%d ts=%d: \"%s\"",
-      line, row.top_y, row.height, row.baseline, row.tabs, row.text
+      line, row.top_y, row.height, row.baseline, row.tabs, backslash(row.text)
     );
 
     int next_y = draw_line(rows[line]);
@@ -281,6 +281,23 @@ class OkLittleLayoutDef : public OkLittleLayout {
       x, y, w, h, tx_clip, ty_clip, tw_clip, th_clip
     );
     u8g2_UpdateDisplayArea(u8g2, tx_clip, ty_clip, tw_clip, th_clip);
+  }
+
+  static char const* backslash(char const* text) {
+    static char buf[80];
+    char const* limit = buf + sizeof(buf) - 5;
+    char* out = buf;
+    for (; *text != '\0' && out < limit; ++text) {
+      if (*text >= 32) {
+        *out++ = *text;
+      } else if (text[1] >= '0' && text[1] <= '9') {
+        out += sprintf(out, "\\%03o", *text);
+      } else {
+        out += sprintf(out, "\\%o", *text);
+      }
+    }
+    *out = '\0';
+    return buf;
   }
 };
 
