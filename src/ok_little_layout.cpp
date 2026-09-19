@@ -88,7 +88,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
             "No %dpx%s font, skipping L%d chunk: \"%.*s\"",
             chunk.height, chunk.bold ? " bold" : "", line,
             chunk.end - chunk.begin, chunk.begin
-          )
+          );
         }
       }
     }
