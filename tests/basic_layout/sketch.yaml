@@ -9,5 +9,5 @@ profiles:
     libraries:
       - dir: ../..
       - Everyday Pixel Fonts (0.1)
-      - OK Logging (0.5)
+      - OK Logging (0.8)
       - U8g2 (2.36.19)
