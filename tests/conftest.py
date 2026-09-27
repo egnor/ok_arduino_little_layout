@@ -17,7 +17,12 @@ def wokwi_output_dir(request):
     if output_dir.is_dir(): shutil.rmtree(output_dir)
 
     sub = ok_subprocess_defaults.SubprocessDefaults(cwd=sketch_dir)
-    sub.run("arduino-cli", "compile", "--output-dir=output.tmp")
+    sub.run(
+        "arduino-cli",
+        "compile",
+        "--warnings=default",
+        "--output-dir=output.tmp"
+    )
     sub.run(
         "wokwi-cli",
         "--scenario=scenario.yaml",

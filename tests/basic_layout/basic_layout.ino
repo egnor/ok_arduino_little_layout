@@ -1,3 +1,6 @@
+// make sure the library compiles with these warnings on
+#pragma GCC diagnostic error "-Wformat=2"
+
 #include <ok_little_layout.h>
 #include <ok_logging.h>
 #include <U8g2lib.h>

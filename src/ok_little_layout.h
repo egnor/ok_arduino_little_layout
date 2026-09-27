@@ -9,7 +9,8 @@ extern "C" struct u8g2_struct;
 class OkLittleLayout {
  public:
   virtual ~OkLittleLayout() = default;
-  virtual void line_printf(int line, char const* format, ...) = 0;
+  virtual void line_printf(int line, char const* format, ...)
+    __attribute__((format(printf, 3, 4))) = 0;
   virtual u8g2_struct* get_u8g2() const = 0;
 };
 
