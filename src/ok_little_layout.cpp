@@ -20,7 +20,6 @@ class OkLittleLayoutDef : public OkLittleLayout {
     nonblank_y = u8g2->height;  // Erase any existing content
     rows_size = u8g2->height / 6 + 1;
     rows = new Row[rows_size];
-    // for (int i = 0; i < rows_size; ++i) rows[i].top_y = -1;
   }
 
   virtual ~OkLittleLayoutDef() {
