@@ -9,9 +9,10 @@ extern "C" struct u8g2_struct;
 class OkLittleLayout {
  public:
   virtual ~OkLittleLayout() = default;
-  virtual void line_printf(int line, char const* format, ...)
+  virtual int line_printf(int line, char const* format, ...)
     __attribute__((format(printf, 3, 4))) = 0;
   virtual u8g2_struct* get_u8g2() const = 0;
+  virtual void set_auto_update(bool) = 0;
 };
 
 uint8_t const* default_ok_little_layout_font(int size, bool bold);

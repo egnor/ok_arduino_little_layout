@@ -30,15 +30,16 @@ class OkLittleLayoutDef : public OkLittleLayout {
     delete[] temp;
   }
 
-  virtual void line_printf(int line, char const* format, ...) override {
+  virtual int line_printf(int line, char const* format, ...) override {
     if (line < 0) {
       OK_ERROR("Bad line number L%d", line);
-      return;
+      return 0;
     }
     if (line >= rows_size) {
       OK_DETAIL("Offscreen L%d", line);
-      return;
+      return u8g2->height;
     }
+    auto& row = rows[line];
 
     while (true) {
       va_list args;
@@ -52,16 +53,15 @@ class OkLittleLayoutDef : public OkLittleLayout {
         temp = new char[temp_size];
       } else if (len < 0) {
         OK_ERROR("Bad L%d format: \"%s\"", line, backslash(format));
-        return;
+        return row.top_y + row.height + 1;  // include gap
       } else {
         break;
       }
     }
 
-    auto& row = rows[line];
     if (row.text != nullptr && strcmp(temp, row.text) == 0) {
       OK_DETAIL("Unchanged L%d: \"%s\"", line, backslash(temp));
-      return;
+      return row.top_y + row.height + 1;  // include gap
     }
 
     int const old_height = row.height;
@@ -114,10 +114,13 @@ class OkLittleLayoutDef : public OkLittleLayout {
       }
     }
 
-    push_rect(0, row.top_y, u8g2->width, next_y - row.top_y);
+    if (auto_update) push_rect(0, row.top_y, u8g2->width, next_y - row.top_y);
+    return row.top_y + row.height + 1;  // include gap
   }
 
   virtual u8g2_t* get_u8g2() const override { return this->u8g2; }
+
+  virtual void set_auto_update(bool f) override { auto_update = f; }
 
  private:
   static constexpr int MAX_HEIGHT = 15;
@@ -141,6 +144,7 @@ class OkLittleLayoutDef : public OkLittleLayout {
 
   u8g2_t* const u8g2;
   uint8_t const* (*choose_font)(int, bool);
+  bool auto_update = true;
 
   Row* rows = nullptr;
   int rows_size = 0;

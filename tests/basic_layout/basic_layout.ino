@@ -20,13 +20,14 @@ void setup() {
   display.setPowerSave(0);
 
   auto* const layout = new_ok_little_layout(display.getU8g2());
-  layout->line_printf(0, "\f5Hello, \bWorld 5!");
-  layout->line_printf(1, "\f7Hello, \bWorld 7!");
-  layout->line_printf(2, "\f9Hello, \bWorld 9!");
-  layout->line_printf(3, "\f11Hello, \bWorld 11!");
-  layout->line_printf(4, "\f13Hello, \bWorld 13!");
-  layout->line_printf(5, "Tab 1\tTab 2\tTab 3");
-  layout->line_printf(6, "\vReverse Video");
+  int bot;
+  bot = layout->line_printf(0, "\f5Hello, \bWorld 5!");
+  bot = layout->line_printf(1, "\f7Hello, \bWorld 7! (%d)", bot);
+  bot = layout->line_printf(2, "\f9Hello, \bWorld 9! (%d)", bot);
+  bot = layout->line_printf(3, "\f11Hello, \bWorld 11! (%d)", bot);
+  bot = layout->line_printf(4, "\f13Hello, \bWorld 13! (%d)", bot);
+  bot = layout->line_printf(5, "Tab 1\tTab 2\tTab 3 (%d)", bot);
+  layout->line_printf(6, "\vReverse Video (%d)", bot);
   Serial.println("LAYOUT READY");
   delete layout;
 }

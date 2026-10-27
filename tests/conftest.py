@@ -49,7 +49,7 @@ def diff_image(request, tmp_path_factory):
         diff_path = tmp_path_factory.mktemp(test_module_name) / a_path.name
         a_image.save(diff_path)
         if diff_mask.getbbox():
-            raise ValueError(f"Images differ, see:\n  {diff_path}")
+            raise ValueError(f"Images differ, see: {diff_path}")
 
         logging.info(f"👾 Clean diff: {diff_path}")
 

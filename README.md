@@ -7,6 +7,7 @@
 OK Little Layout is an Arduino library to format text on small monochrome displays using [the u8g2 display driver library](https://github.com/olikraus/u8g2/wiki). Simple markup controls font size, boldness, inverse video, and column layout; changes render incrementally.
 
 Before using this library, first consider more established options:
+
 - [LVGL](https://lvgl.io/) - full-color, high-end interactive GUI for 32-bit microcontrollers with framebuffers
 - [GUIslice](https://github.com/ImpulseAdventure/GUIslice) - like LVGL, not as pretty but runs on lower spec hardware
 - [UiUiUi](https://github.com/dirkhillbrecht/UiUiUi) - similar to this library, also u8g2-based, more widget-boxy and less text-printy; dormant?
@@ -19,16 +20,19 @@ OK Little Layout is designed for pervasive small status displays, not to be a fu
 First [install U8g2](https://github.com/olikraus/u8g2/wiki/u8g2install) and [initialize a U8g2 driver for your hardware](https://github.com/olikraus/u8g2/wiki/u8g2setupcpp#introduction).
 
 Then, install this library ("OK Little Layout" in the library manager), and include its header:
+
 ```
 #include <ok_little_layout.h>
 ```
 
 Then, create an `OkLittleLayout` object, passing your U8g2 driver:
+
 ```
 OkLittleLayout* my_little_layout = new_ok_little_layout(my_display.getU8g2());
 ```
 
 Finally, write text (printf-style) to numbered display lines of your choice:
+
 ```
 my_little_layout->line_printf(0, "Hello World! The time is: %.3f", millis() * 1e-3f);
 ```
@@ -38,6 +42,7 @@ OK Little Layout updates the display so it always shows all text lines in order,
 ### Markup
 
 Font size, text style, and spacing are set by control characters in the `->line_printf(...)` text:
+
 - `\f<size>` - set font size so lines take `<size>` pixels, from `\f5` ~ `\f15` (`\f1` ~ `\f20` for blank lines)
 - `\1` ~ `\6` - add precise horizontal spacing in pixels
 - `\t` - advance one tabstop; each line is evenly divided by tabs in that line (see examples below)
@@ -49,6 +54,7 @@ These are C string escapes that generate control characters. The control charact
 ### Configuring fonts
 
 By default, OK Little Layout uses [the "Everyday Pixel" fonts](https://github.com/egnor/everyday_pixel_fonts/). If you want to use different fonts, or just avoid linking in sizes you don't use, write a font-choosing function:
+
 ```
 uint8_t const* my_font_chooser(int size, bool bold) {
   if (size < 5) return nullptr;
@@ -63,11 +69,20 @@ uint8_t const* my_font_chooser(int size, bool bold) {
 ```
 
 Then, pass your function as the optional second parameter to `new_ok_little_layout`:
+
 ```
 my_little_layout = new_ok_little_layout(my_u8g2.getU8g2(), my_font_chooser);
 ```
 
 See [`default_ok_little_layout_font.cpp`](src/default_ok_little_layout_font.cpp) for the default font selection.
+
+### Combining with U8g2 graphics
+
+To draw graphics on top of layout text, use [U8g2lib graphics functions](https://github.com/olikraus/u8g2/wiki/u8g2reference) with the underlying `u8gt_t*` (from `->get_u8g2()`, or remember it from setup).
+
+By default, OK Little Layout updates the display after every text change. You can suppress automatic updates with `->set_auto_update(false)`, then call [`u8g2_UpdateDisplay(...)`](https://github.com/olikraus/u8g2/wiki/u8g2reference#updatedisplay) yourself to ensure text and graphics are output together. Make sure to "repair" graphics on affected lines after text changes.
+
+To help align graphics with text, calls to `->line_printf(...)` return the pixel Y-coordinate of the bottom of the output line. (Note, this may change if lines above it change in size.) Horizontal alignment is up to your wits.
 
 ## Examples
 
@@ -175,5 +190,23 @@ These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
 
 </td><td>
   <img width="226" alt="Screen with layout demonstration" src="https://github.com/user-attachments/assets/2f96c6f1-4501-4143-a2f3-640e2fd4615f" />
+</td></tr>
+<tr></tr>
+<tr><td>
+  <p align="center"><b>Mixed text and graphics</b></p>
+
+  ```
+  int const text_bottom_y = layout->line_printf(0, "Hello, Graphics!");
+  u8g2_t* const u8g2 = layout->get_u8g2();
+  int const center_x = u8g2_GetDisplayWidth(u8g2) / 2;
+  int const center_y = (text_bottom_y + u8g2_GetDisplayHeight(u8g2)) / 2;
+  int const radius = center_y - text_bottom_y - 2;
+  u8g2_SetDrawColor(u8g2, 1);
+  u8g2_DrawCircle(u8g2, center_x, center_y, radius, U8G2_DRAW_ALL);
+  u8g2_UpdateDisplay(u8g2);
+  ```
+
+</td><td>
+  (image to be added here)
 </td></tr>
 </table>

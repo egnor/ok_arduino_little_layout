@@ -23,12 +23,23 @@ void setup() {
   layout->line_printf(3, "\f9Line 3");
   layout->line_printf(4, "\f9Line 4");
   Serial.println("LAYOUT 1 READY");
+  Serial.flush();
 
   layout->line_printf(3, "\f13\bUpdated line 3");
   Serial.println("LAYOUT 2 READY");
+  Serial.flush();
 
   layout->line_printf(1, "\f13\bUpdated line 1");
   Serial.println("LAYOUT 3 READY");
+  Serial.flush();
+
+  layout->set_auto_update(false);
+  layout->line_printf(0, "\f13\bUpdated line 0");
+  Serial.println("LAYOUT 4 READY");
+  Serial.flush();
+
+  u8g2_UpdateDisplay(layout->get_u8g2());
+  Serial.println("LAYOUT 5 READY");
   delete layout;
 }
 

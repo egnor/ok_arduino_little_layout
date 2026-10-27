@@ -1,15 +1,23 @@
 name: screen update test
 version: 1
 steps:
-  - wait-serial: 'LAYOUT 1 READY'
+  - wait-serial: "LAYOUT 1 READY"
   - take-screenshot:
-      part-id: 'oled'
-      save-to: 'output.tmp/screenshot-1.png'
-  - wait-serial: 'LAYOUT 2 READY'
+      part-id: "oled"
+      save-to: "output.tmp/screenshot-1.png"
+  - wait-serial: "LAYOUT 2 READY"
   - take-screenshot:
-      part-id: 'oled'
-      save-to: 'output.tmp/screenshot-2.png'
-  - wait-serial: 'LAYOUT 3 READY'
+      part-id: "oled"
+      save-to: "output.tmp/screenshot-2.png"
+  - wait-serial: "LAYOUT 3 READY"
   - take-screenshot:
-      part-id: 'oled'
-      save-to: 'output.tmp/screenshot-3.png'
+      part-id: "oled"
+      save-to: "output.tmp/screenshot-3.png"
+  - wait-serial: "LAYOUT 4 READY"
+  - take-screenshot:
+      part-id: "oled"
+      save-to: "output.tmp/screenshot-4.png"
+  - wait-serial: "LAYOUT 5 READY"
+  - take-screenshot:
+      part-id: "oled"
+      save-to: "output.tmp/screenshot-5.png"
