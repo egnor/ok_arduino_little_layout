@@ -207,6 +207,6 @@ These use a [128x64 SSD1306 display](https://www.adafruit.com/product/326).
   ```
 
 </td><td>
-  (image to be added here)
+  <img width="226" alt="Screen with text and circle" src="https://github.com/user-attachments/assets/b59be961-ec0f-4e7b-97e2-f3c629b19f3d" />
 </td></tr>
 </table>
